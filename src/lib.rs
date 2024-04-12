@@ -35,6 +35,10 @@ impl Uint256 {
         Uint256 { bytes }
     }
 
+    pub fn from_u32(value: u32) -> Self {
+        Self::from_hexa_str(format!("{:08x}", value).as_str())
+    }
+
     pub fn from_hexa_str(hexa_str: &str) -> Self {
         let mut bytes = [0_u8; 32];
 
@@ -428,6 +432,29 @@ mod tests {
 
         assert_eq!(
             Uint256::from_u8(0x00_u8).to_string().to_ascii_lowercase(),
+            "0x0000000000000000000000000000000000000000000000000000000000000000"
+                .to_ascii_lowercase()
+        );
+    }
+
+    #[test]
+    fn from_u32() {
+        assert_eq!(
+            Uint256::from_u32(0x01_u32).to_string().to_ascii_lowercase(),
+            "0x0000000000000000000000000000000000000000000000000000000000000001"
+                .to_ascii_lowercase()
+        );
+
+        assert_eq!(
+            Uint256::from_u32(0xFFFFFFFF_u32)
+                .to_string()
+                .to_ascii_lowercase(),
+            "0x00000000000000000000000000000000000000000000000000000000FFFFFFFF"
+                .to_ascii_lowercase()
+        );
+
+        assert_eq!(
+            Uint256::from_u32(0x00_u32).to_string().to_ascii_lowercase(),
             "0x0000000000000000000000000000000000000000000000000000000000000000"
                 .to_ascii_lowercase()
         );
