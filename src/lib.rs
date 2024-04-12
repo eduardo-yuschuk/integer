@@ -39,6 +39,19 @@ impl Uint256 {
         Self::from_hexa_str(format!("{:08x}", value).as_str())
     }
 
+    pub fn from_slice(slice: &[u8]) -> Self {
+        if slice.len() > Self::NUM_BYTES {
+            panic!("invalid construction")
+        }
+        let mut bytes = [0u8; 32];
+        let mut i = 0;
+        for byte in slice.into_iter() {
+            bytes[i] = *byte;
+            i += 1;
+        }
+        Uint256 { bytes }
+    }
+
     pub fn from_hexa_str(hexa_str: &str) -> Self {
         let mut bytes = [0_u8; 32];
 
@@ -500,5 +513,21 @@ mod tests {
     fn to_u32() {
         let value = Uint256::from_u32(0x01_u32).to_u32();
         assert_eq!(value, 0x01_u32);
+    }
+
+    #[test]
+    fn from_slice() {
+        let bytes = [
+            0x00_u8, 0x01_u8, 0x02_u8, 0x03_u8, 0x04_u8, 0x05_u8, 0x06_u8, 0x07_u8, 0x08_u8,
+            0x09_u8, 0x0A_u8, 0x0B_u8, 0x0C_u8, 0x0D_u8, 0x0E_u8, 0x0F_u8, 0x10_u8, 0x11_u8,
+            0x12_u8, 0x13_u8, 0x14_u8, 0x15_u8, 0x16_u8, 0x17_u8, 0x18_u8, 0x19_u8, 0x1A_u8,
+            0x1B_u8, 0x1C_u8, 0x1D_u8, 0x1E_u8, 0x1F_u8,
+        ];
+        let number = Uint256::from_slice(&bytes[..]);
+        assert_eq!(
+            number.to_string().to_ascii_lowercase(),
+            "0x1F1E1D1C1B1A191817161514131211100F0E0D0C0B0A09080706050403020100"
+                .to_ascii_lowercase(),
+        );
     }
 }
