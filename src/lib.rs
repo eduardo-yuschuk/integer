@@ -92,6 +92,10 @@ impl Uint256 {
         self.bytes[index]
     }
 
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.bytes[..]
+    }
+
     pub fn shift_left(&mut self, places: usize) {
         let byte_shift = places / 8;
         let bit_shift = places % 8;
@@ -421,7 +425,7 @@ mod tests {
             "0x00000000000000000000000000000000000000000000000000000000000000FF"
                 .to_ascii_lowercase()
         );
-        
+
         assert_eq!(
             Uint256::from_u8(0x00_u8).to_string().to_ascii_lowercase(),
             "0x0000000000000000000000000000000000000000000000000000000000000000"
