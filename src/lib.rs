@@ -100,6 +100,37 @@ impl Uint256 {
         &self.bytes[..]
     }
 
+    pub fn to_u8(&self) -> u8 {
+        // FIX: manage this as overflow
+        if Self::NUM_BYTES < 1 {
+            panic!("invalid conversion to u8")
+        }
+        for index in 1..Self::NUM_BYTES {
+            if self.bytes[index] != 0u8 {
+                panic!("invalid conversion to u8 (overflow)")
+            }
+        }
+        self.bytes[0]
+    }
+
+    pub fn to_u32(&self) -> u32 {
+        // FIX: manage this as overflow
+        if Self::NUM_BYTES < 4 {
+            panic!("invalid conversion to u32")
+        }
+        for index in 4..Self::NUM_BYTES {
+            if self.bytes[index] != 0u8 {
+                panic!("invalid conversion to u32 (overflow)")
+            }
+        }
+        // FIX: subject to representation being hexadecimal
+        let mut _hexa_str = self.to_string();
+        if _hexa_str.starts_with("0x") || _hexa_str.starts_with("0X") {
+            _hexa_str = _hexa_str[2..].to_owned();
+        }
+        u32::from_str_radix(_hexa_str.as_str(), 16).unwrap()
+    }
+
     pub fn shift_left(&mut self, places: usize) {
         let byte_shift = places / 8;
         let bit_shift = places % 8;
@@ -458,5 +489,16 @@ mod tests {
             "0x0000000000000000000000000000000000000000000000000000000000000000"
                 .to_ascii_lowercase()
         );
+    }
+
+    #[test]
+    fn to_u8() {
+        assert_eq!(Uint256::from_u8(0x01_u8).to_u8(), 0x01_u8);
+    }
+
+    #[test]
+    fn to_u32() {
+        let value = Uint256::from_u32(0x01_u32).to_u32();
+        assert_eq!(value, 0x01_u32);
     }
 }
