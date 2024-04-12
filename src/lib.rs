@@ -38,7 +38,7 @@ impl Uint256 {
         }
 
         if _hexa_str.len() == 0 {
-            panic!("invalid hexa_str {}", hexa_str);
+            panic!("invalid hexa_str {}", _hexa_str);
         }
 
         if _hexa_str.len() % 2 == 1 {
@@ -57,24 +57,24 @@ impl Uint256 {
                 '7' => 0x7_u8,
                 '8' => 0x8_u8,
                 '9' => 0x9_u8,
-                'A' => 0xA_u8,
-                'B' => 0xB_u8,
-                'C' => 0xC_u8,
-                'D' => 0xD_u8,
-                'E' => 0xE_u8,
-                'F' => 0xF_u8,
+                'a' => 0xA_u8,
+                'b' => 0xB_u8,
+                'c' => 0xC_u8,
+                'd' => 0xD_u8,
+                'e' => 0xE_u8,
+                'f' => 0xF_u8,
                 _ => panic!("invalid char {}", character),
             }
         }
 
         let mut index = 0;
-        hexa_str
+        _hexa_str
             .chars()
             .collect::<Vec<char>>()
             .chunks(2)
             .rev()
             .for_each(|digits| {
-                let value = (get_value(digits[1]) << 4) | get_value(digits[0]);
+                let value = (get_value(digits[0]) << 4) | get_value(digits[1]);
                 bytes[index] = value;
                 index += 1;
             });
@@ -120,7 +120,7 @@ impl Uint256 {
         if byte_shift > 0 {
             let mut i = 0;
 
-            while i < Self::NUM_BYTES - 1 {
+            while i < Self::NUM_BYTES - byte_shift {
                 self.bytes[i] = self.bytes[i + byte_shift];
                 i += 1;
             }
@@ -139,6 +139,29 @@ impl Uint256 {
             }
             self.bytes[Self::NUM_BYTES - 1] >>= bit_shift;
         }
+    }
+
+    pub fn to_binary_string(&self) -> String {
+        let mut str = "".to_owned();
+
+        let mut bytes = self.bytes.clone();
+        bytes.reverse();
+
+        let mut index = Self::NUM_BYTES;
+        bytes.chunks(4).for_each(|chunk| {
+            str += &format!(
+                "[{0:02}..{1:02}] {2:08b} ({2:02x}) | {3:08b} ({3:02x}) | {4:08b} ({4:02x}) | {5:08b} ({5:02x})\n",
+                index - 1,
+                index - 4,
+                chunk[0],
+                chunk[1],
+                chunk[2],
+                chunk[3]
+            );
+            index -= 4;
+        });
+
+        str
     }
 }
 
@@ -167,8 +190,27 @@ mod tests {
     #[test]
     fn from_hexa_str() {
         assert_eq!(
-            Uint256::from_hexa_str(format!("{:016x}", u64::MAX).as_str()).to_string(),
+            Uint256::from_hexa_str(format!("{:016x}", 0x001122334455667788_u64).as_str())
+                .to_string()
+                .to_ascii_lowercase(),
+            "0x0000000000000000000000000000000000000000000000001122334455667788"
+                .to_ascii_lowercase()
+        );
+        assert_eq!(
+            Uint256::from_hexa_str(format!("{:016x}", u64::MAX).as_str())
+                .to_string()
+                .to_ascii_lowercase(),
             "0x000000000000000000000000000000000000000000000000ffffffffffffffff"
+                .to_ascii_lowercase()
+        );
+        assert_eq!(
+            Uint256::from_hexa_str(
+                "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+            )
+            .to_string()
+            .to_ascii_lowercase(),
+            "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                .to_ascii_lowercase()
         );
     }
 
@@ -178,70 +220,77 @@ mod tests {
 
         let mut one = Uint256::one();
         assert_eq!(
-            one.to_string(),
+            one.to_string().to_ascii_lowercase(),
             "0x0000000000000000000000000000000000000000000000000000000000000001"
+                .to_ascii_lowercase()
         );
 
         one.shift_left(1);
         assert_eq!(
-            one.to_string(),
+            one.to_string().to_ascii_lowercase(),
             "0x0000000000000000000000000000000000000000000000000000000000000002"
+                .to_ascii_lowercase()
         );
 
         one.shift_left(7);
         assert_eq!(
-            one.to_string(),
+            one.to_string().to_ascii_lowercase(),
             "0x0000000000000000000000000000000000000000000000000000000000000100"
+                .to_ascii_lowercase()
         );
 
         one.shift_left(16);
         assert_eq!(
-            one.to_string(),
+            one.to_string().to_ascii_lowercase(),
             "0x0000000000000000000000000000000000000000000000000000000001000000"
+                .to_ascii_lowercase()
         );
 
         // shifting zero
 
         let mut zero = Uint256::zero();
         assert_eq!(
-            zero.to_string(),
+            zero.to_string().to_ascii_lowercase(),
             "0x0000000000000000000000000000000000000000000000000000000000000000"
+                .to_ascii_lowercase()
         );
 
         zero.shift_left(128);
         assert_eq!(
-            zero.to_string(),
+            zero.to_string().to_ascii_lowercase(),
             "0x0000000000000000000000000000000000000000000000000000000000000000"
+                .to_ascii_lowercase()
         );
     }
 
     #[test]
     fn shift_right() {
-        // shifting one
+        // shifting some number
 
-        let gibibyte = Uint256::from_hexa_str("0x40000000");
+        let mut number = Uint256::from_hexa_str("0x40000000");
         assert_eq!(
-            gibibyte.to_string(),
+            number.to_string().to_ascii_lowercase(),
             "0x0000000000000000000000000000000000000000000000000000000040000000"
+                .to_ascii_lowercase()
         );
 
-        // one.shift_right(1);
-        // assert_eq!(
-        //     one.to_string(),
-        //     "0x0000000000000000000000000000000000000000000000000000000000000002"
-        // );
+        number.shift_right(1);
+        assert_eq!(
+            number.to_string(),
+            "0x0000000000000000000000000000000000000000000000000000000020000000"
+        );
 
-        // one.shift_right(7);
-        // assert_eq!(
-        //     one.to_string(),
-        //     "0x0000000000000000000000000000000000000000000000000000000000000100"
-        // );
+        number.shift_right(7);
+        assert_eq!(
+            number.to_string(),
+            "0x0000000000000000000000000000000000000000000000000000000000400000"
+        );
 
-        // one.shift_right(16);
-        // assert_eq!(
-        //     one.to_string(),
-        //     "0x0000000000000000000000000000000000000000000000000000000001000000"
-        // );
+        number.shift_right(16);
+        assert_eq!(
+            number.to_string(),
+            "0x0000000000000000000000000000000000000000000000000000000000000040"
+        );
 
         // shifting zero
 
@@ -255,6 +304,101 @@ mod tests {
         assert_eq!(
             zero.to_string(),
             "0x0000000000000000000000000000000000000000000000000000000000000000"
+        );
+    }
+
+    #[test]
+    fn to_binary_string() {
+        let number = Uint256::from_hexa_str(
+            "0x1F1E1D1C1B1A191817161514131211100F0E0D0C0B0A09080706050403020100",
+        );
+        println!("{}", number.to_binary_string());
+    }
+
+    #[test]
+    fn shift_bytes_two_way() {
+        let mut number = Uint256::from_hexa_str("0x01");
+        println!("1:\n{}", number.to_binary_string());
+        assert_eq!(
+            number.to_string().to_ascii_lowercase(),
+            "0x0000000000000000000000000000000000000000000000000000000000000001"
+                .to_ascii_lowercase()
+        );
+
+        let bytes_to_shift = 31;
+        let bits_to_shift = 8 * bytes_to_shift;
+
+        number.shift_left(bits_to_shift);
+        println!(
+            "after << {} bits ({} bytes):\n{}",
+            bits_to_shift,
+            bytes_to_shift,
+            number.to_binary_string()
+        );
+
+        assert_eq!(
+            number.to_string().to_ascii_lowercase(),
+            "0x0100000000000000000000000000000000000000000000000000000000000000"
+                .to_ascii_lowercase()
+        );
+
+        number.shift_right(bits_to_shift);
+        println!(
+            "after >> {} bits ({} bytes):\n{}",
+            bits_to_shift,
+            bytes_to_shift,
+            number.to_binary_string()
+        );
+
+        assert_eq!(
+            number.to_string().to_ascii_lowercase(),
+            "0x0000000000000000000000000000000000000000000000000000000000000001"
+                .to_ascii_lowercase()
+        );
+    }
+
+    #[test]
+    fn shift_bytes_and_bits_two_way() {
+        let mut number = Uint256::from_hexa_str("0x01");
+        println!("1:\n{}", number.to_binary_string());
+        assert_eq!(
+            number.to_string().to_ascii_lowercase(),
+            "0x0000000000000000000000000000000000000000000000000000000000000001"
+                .to_ascii_lowercase()
+        );
+
+        let bytes_to_shift = 31;
+        let extra_bits = 4;
+        let bits_to_shift = 8 * bytes_to_shift + extra_bits;
+
+        number.shift_left(bits_to_shift);
+        println!(
+            "after << {} bits ({} bytes + {} extra bits):\n{}",
+            bits_to_shift,
+            bytes_to_shift,
+            extra_bits,
+            number.to_binary_string()
+        );
+
+        assert_eq!(
+            number.to_string().to_ascii_lowercase(),
+            "0x1000000000000000000000000000000000000000000000000000000000000000"
+                .to_ascii_lowercase()
+        );
+
+        number.shift_right(bits_to_shift);
+        println!(
+            "after >> {} bits ({} bytes + {} extra bits):\n{}",
+            bits_to_shift,
+            bytes_to_shift,
+            extra_bits,
+            number.to_binary_string()
+        );
+
+        assert_eq!(
+            number.to_string().to_ascii_lowercase(),
+            "0x0000000000000000000000000000000000000000000000000000000000000001"
+                .to_ascii_lowercase()
         );
     }
 }
