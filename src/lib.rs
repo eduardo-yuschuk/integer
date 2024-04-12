@@ -1,5 +1,6 @@
 use std::fmt;
 
+#[derive(Clone, Copy)]
 pub struct Uint256 {
     bytes: [u8; 32],
 }
