@@ -200,6 +200,10 @@ impl Uint256 {
         }
     }
 
+    pub fn add(&self, other: Self) -> Self {}
+
+    pub fn mul(&self, other: Self) -> Self {}
+
     pub fn to_binary_string(&self) -> String {
         let mut str = "".to_owned();
 
@@ -528,6 +532,52 @@ mod tests {
         assert_eq!(
             number.to_string().to_ascii_lowercase(),
             "0x1F1E1D1C1B1A191817161514131211100F0E0D0C0B0A09080706050403020100"
+                .to_ascii_lowercase(),
+        );
+    }
+
+    #[test]
+    fn add() {
+        assert_eq!(
+            Uint256::from_u32(10_u32)
+                .add(Uint256::from_u32(10_u32))
+                .to_string()
+                .to_ascii_lowercase(),
+            "0x0000000000000000000000000000000000000000000000000000000000000014"
+                .to_ascii_lowercase(),
+        );
+
+        assert_eq!(
+            Uint256::from_hexa_str(
+                "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+            )
+            .add(Uint256::from_u32(1_u32))
+            .to_string()
+            .to_ascii_lowercase(),
+            "0x0000000000000000000000000000000000000000000000000000000000000000"
+                .to_ascii_lowercase(),
+        );
+    }
+
+    #[test]
+    fn mul() {
+        assert_eq!(
+            Uint256::from_u32(10_u32)
+                .add(Uint256::from_u32(10_u32))
+                .to_string()
+                .to_ascii_lowercase(),
+            "0x0000000000000000000000000000000000000000000000000000000000000064"
+                .to_ascii_lowercase(),
+        );
+
+        assert_eq!(
+            Uint256::from_hexa_str(
+                "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+            )
+            .mul(Uint256::from_u32(2_u32))
+            .to_string()
+            .to_ascii_lowercase(),
+            "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE"
                 .to_ascii_lowercase(),
         );
     }
