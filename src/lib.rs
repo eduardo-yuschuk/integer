@@ -200,7 +200,11 @@ impl Uint256 {
         }
     }
 
-    pub fn add(&self, other: Self) -> Self {}
+    pub fn add(&self, other: Self) -> Self {
+        for i in Self::NUM_BYTES..0 {
+            
+        }
+    }
 
     pub fn mul(&self, other: Self) -> Self {}
 
